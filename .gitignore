@@ -1,0 +1,40 @@
+# Terraform state and plan files
+terraform/terraform.tfstate
+terraform/terraform.tfstate.*
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/tfplan
+terraform/bastion-plan
+terraform/.terraform/
+
+# Local backups
+*.bak
+*.backup
+
+# Real infrastructure inventory
+ansible/inventory
+
+# Secrets and private keys
+.env
+.env.*
+*.pem
+*.key
+id_rsa
+id_ed25519
+
+# Python and editor files
+__pycache__/
+*.pyc
+.vscode/
+.idea/
+*.save*
+
+# Local infrastructure configuration
+/ansible/inventory
+/terraform/backend.tf
+*.save*
+
+# Local infrastructure configuration
+/ansible/inventory
+/terraform/backend.tf
+*.save*

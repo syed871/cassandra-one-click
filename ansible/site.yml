@@ -1,0 +1,7 @@
+---
+- name: Configure Cassandra Cluster
+  hosts: cassandra
+  become: true
+
+  roles:
+    - cassandra

@@ -1,0 +1,12 @@
+MAX_HEAP_SIZE="512M"
+HEAP_NEWSIZE="128M"
+
+LOCAL_JMX=yes
+JMX_PORT="7199"
+
+JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote"
+JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.port=$JMX_PORT"
+JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.rmi.port=$JMX_PORT"
+JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.authenticate=false"
+JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.ssl=false"
+JVM_OPTS="$JVM_OPTS -Djava.rmi.server.hostname=127.0.0.1"

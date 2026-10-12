@@ -1,0 +1,121 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install required packages
+  ansible.builtin.apt:
+    name:
+      - openjdk-17-jdk
+      - curl
+      - gnupg
+      - apt-transport-https
+    state: present
+
+- name: Create Cassandra keyring directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download Cassandra repository key
+  ansible.builtin.get_url:
+    url: https://downloads.apache.org/cassandra/KEYS
+    dest: /tmp/cassandra-keys
+    mode: '0644'
+
+- name: Import Cassandra repository key
+  ansible.builtin.shell: |
+    gpg --dearmor < /tmp/cassandra-keys > /etc/apt/keyrings/cassandra.gpg
+  args:
+    creates: /etc/apt/keyrings/cassandra.gpg
+
+- name: Add Cassandra repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/cassandra.gpg] https://debian.cassandra.apache.org 50x main"
+    filename: cassandra
+    state: present
+
+- name: Update apt cache after adding Cassandra repository
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install Cassandra
+  ansible.builtin.apt:
+    name: cassandra
+    state: present
+
+- name: Check existing swap
+  ansible.builtin.shell: swapon --show --noheadings
+  register: swap_status
+  changed_when: false
+
+- name: Create swap file
+  ansible.builtin.command: fallocate -l 1G /swapfile
+  args:
+    creates: /swapfile
+  when: swap_status.stdout == ""
+
+- name: Set swap file permissions
+  ansible.builtin.file:
+    path: /swapfile
+    owner: root
+    group: root
+    mode: '0600'
+  when: swap_status.stdout == ""
+
+- name: Format swap file
+  ansible.builtin.command: mkswap /swapfile
+  when: swap_status.stdout == ""
+
+- name: Enable swap
+  ansible.builtin.command: swapon /swapfile
+  when: swap_status.stdout == ""
+
+- name: Make swap persistent
+  ansible.builtin.mount:
+    path: none
+    src: /swapfile
+    fstype: swap
+    opts: sw
+    state: present
+
+- name: Stop Cassandra before configuration
+  ansible.builtin.service:
+    name: cassandra
+    state: stopped
+  failed_when: false
+
+- name: Deploy Cassandra JVM configuration
+  ansible.builtin.template:
+    src: cassandra-env.sh.j2
+    dest: /etc/cassandra/cassandra-env.sh
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart Cassandra
+
+- name: Deploy Cassandra configuration
+  ansible.builtin.template:
+    src: cassandra.yaml.j2
+    dest: /etc/cassandra/cassandra.yaml
+    owner: cassandra
+    group: cassandra
+    mode: '0644'
+  notify: Restart Cassandra
+
+- name: Deploy Cassandra rack configuration
+  ansible.builtin.template:
+    src: cassandra-rackdc.properties.j2
+    dest: /etc/cassandra/cassandra-rackdc.properties
+    owner: cassandra
+    group: cassandra
+    mode: '0644'
+  notify: Restart Cassandra
+
+- name: Enable and start Cassandra service
+  ansible.builtin.service:
+    name: cassandra
+    enabled: true
+    state: started

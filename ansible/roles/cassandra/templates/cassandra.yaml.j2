@@ -1,0 +1,46 @@
+cluster_name: 'Cassandra-One-Click'
+
+num_tokens: 16
+
+partitioner: org.apache.cassandra.dht.Murmur3Partitioner
+
+seed_provider:
+  - class_name: org.apache.cassandra.locator.SimpleSeedProvider
+    parameters:
+      - seeds: "{{ hostvars[groups['cassandra'][0]]['ansible_default_ipv4']['address'] }},{{ hostvars[groups['cassandra'][1]]['ansible_default_ipv4']['address'] }}"
+
+listen_address: {{ ansible_default_ipv4.address }}
+
+broadcast_address: {{ ansible_default_ipv4.address }}
+
+rpc_address: 0.0.0.0
+
+broadcast_rpc_address: {{ ansible_default_ipv4.address }}
+
+endpoint_snitch: GossipingPropertyFileSnitch
+
+start_native_transport: true
+
+native_transport_port: 9042
+
+storage_port: 7000
+
+ssl_storage_port: 7001
+
+read_request_timeout: 5000ms
+write_request_timeout: 2000ms
+range_request_timeout: 10000ms
+counter_write_request_timeout: 5000ms
+cas_contention_timeout: 1000ms
+
+commitlog_sync: periodic
+commitlog_sync_period: 10000ms
+
+data_file_directories:
+  - /var/lib/cassandra/data
+
+commitlog_directory: /var/lib/cassandra/commitlog
+
+saved_caches_directory: /var/lib/cassandra/saved_caches
+
+hints_directory: /var/lib/cassandra/hints

@@ -22,7 +22,7 @@ parameters {
                         set -e
                         ssh -o BatchMode=yes \
                             -o StrictHostKeyChecking=yes \
-                            ubuntu@52.66.103.170 'echo BASTION_OK'
+                            ubuntu@$BASTION_HOST 'echo BASTION_OK'
 
                         ansible-playbook --version
                         test -r /opt/cassandra-one-click/ansible/inventory
@@ -79,7 +79,7 @@ parameters {
                         sh '''
                             set -e
                             /usr/local/bin/aws s3api head-object \
-                                --bucket cassandra-one-click-786971362087 \
+                                --bucket $TF_STATE_BUCKET \
                                 --key cassandra-one-click/terraform.tfstate
 
                             echo "TERRAFORM_STATE_ACCESS_OK"
